@@ -1,0 +1,8 @@
+http_query_time_graph.sh
+------------------------
+
+usage: http_query_time_graph.sh <url> <count>
+
+1. Does <count> http queries to <url> and records connection time and total time for each query
+2. Graphs this times via gnuplot
+

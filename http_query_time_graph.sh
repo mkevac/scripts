@@ -21,8 +21,8 @@ do
 	curl "$url" -o /dev/null -w '%{time_connect} %{time_total}\n' -s >> /tmp/datafull
 done
 
-cat /tmp/datafull | awk '{print $1}' > /tmp/column1
-cat /tmp/datafull | awk '{print $2}' > /tmp/column2
+cat /tmp/datafull | awk '{print $1}' > /tmp/connect
+cat /tmp/datafull | awk '{print $2}' > /tmp/total
 
-echo "plot '/tmp/column1', '/tmp/column2'" > /tmp/gnuplotcmd
+echo "plot '/tmp/connect', '/tmp/total'" > /tmp/gnuplotcmd
 gnuplot -p /tmp/gnuplotcmd

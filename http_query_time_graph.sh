@@ -1,24 +1,76 @@
 #!/bin/bash
 
-MINPARAMS=2
+usage()
+{
+cat << EOF
+usage: $0 options
 
-if [ $# -lt "$MINPARAMS" ]
+This script runs queries to URL and graphs resulting connection and total times.
+
+OPTIONS:
+  -h   Show this message
+  -x   Use this proxy
+  -g   Compress data
+  -u   URL to use
+  -r   How much retries?
+EOF
+}
+
+PROXY=
+GZIP=
+URL=
+RETRIES=500
+
+while getopts "x:ghu:r:" OPTION
+do
+        case $OPTION in
+                h)
+                        usage
+                        exit 1
+                        ;;
+                x)
+                        PROXY=$OPTARG
+                        ;;
+                g)
+                        GZIP=1
+                        ;;
+                u)
+                        URL=$OPTARG
+                        ;;
+                r)
+                        RETRIES=$OPTARG
+                        ;;
+                ?)
+                        usage
+                        exit 1
+                        ;;
+        esac
+done
+
+if [[ -z $URL ]]
 then
-	echo
-	echo "usage: $0 <url> <count>"
-	exit
+        usage
+        exit 1
 fi
 
-url=$1
-count=$2
+if [[ ! -z $PROXY ]]
+then
+        PROXYCMD="-x $PROXY"
+fi
+
+if [[ ! -z $GZIP ]]
+then
+        GZIPCMD="-H Content-Encoding:gzip"
+fi
 
 # clean data file
 > /tmp/datafull
 
-for x in $(seq $count)
+for x in $(seq $RETRIES)
 do
-	echo "query $x of $count"
-	curl "$url" -o /dev/null -w '%{time_connect} %{time_total}\n' -s >> /tmp/datafull
+	echo "query $x of $RETRIES"
+        curl "$URL" -o /dev/null -w "%{time_connect} %{time_total}\n" -s $GZIPCMD $PROXYCMD >> /tmp/datafull
+
 done
 
 cat /tmp/datafull | awk '{print $1}' > /tmp/connect
